@@ -136,8 +136,8 @@ class Runner(object):
 
         :param bool warn:
             Whether to warn and continue, instead of raising
-            `.UnexpectedExit`, when the executed command exits with a
-            nonzero status. Default: ``False``.
+            `.UnexpectedExit`, when the executed command exits with an
+            unexpected status (see param `ok_ret_codes`). Default: ``False``.
 
             .. note::
                 This setting has no effect on exceptions, which will still be
@@ -342,12 +342,17 @@ class Runner(object):
 
             .. versionadded:: 1.3
 
+        :param ok_ret_codes:
+            A tuple of integer return codes (or a single int return code) that
+            we will accept as "success".  Defaults to ``None``, which is
+            equivalent to ``(0,)``.
+
         :returns:
             `Result`, or a subclass thereof.
 
         :raises:
-            `.UnexpectedExit`, if the command exited nonzero and
-            ``warn`` was ``False``.
+            `.UnexpectedExit`, if the command failed (usually: exited nonzero)
+            and ``warn`` was ``False``.
 
         :raises:
             `.Failure`, if the command didn't even exit cleanly, e.g. if a
@@ -397,6 +402,7 @@ class Runner(object):
             pty=self.using_pty,
             hide=self.opts["hide"],
             encoding=self.encoding,
+            ok_ret_codes=self.opts["ok_ret_codes"]
         )
 
     def _run_body(self, command, **kwargs):
@@ -1381,6 +1387,10 @@ class Result(object):
         results in ``result.hide == ('stdout', 'stderr')``; and ``hide=False``
         (the default) generates ``result.hide == ()`` (the empty tuple.)
 
+    :param ok_ret_codes:
+        A tuple of integer return codes (or a single int return code) that we
+        will accept as "success".  Defaults to containing only `0` (=`None`).
+
     .. note::
         `Result` objects' truth evaluation is equivalent to their `.ok`
         attribute's value. Therefore, quick-and-dirty expressions like the
@@ -1409,6 +1419,7 @@ class Result(object):
         exited=0,
         pty=False,
         hide=tuple(),
+        ok_ret_codes=None,
     ):
         self.stdout = stdout
         self.stderr = stderr
@@ -1421,6 +1432,12 @@ class Result(object):
         self.exited = exited
         self.pty = pty
         self.hide = hide
+        if ok_ret_codes is None:
+            self.ok_ret_codes = (0,)
+        elif isinstance(ok_ret_codes, int):
+            self.ok_ret_codes = (ok_ret_codes,)
+        else:
+            self.ok_ret_codes = ok_ret_codes
 
     @property
     def return_code(self):
@@ -1470,19 +1487,19 @@ class Result(object):
     @property
     def ok(self):
         """
-        A boolean equivalent to ``exited == 0``.
+        A boolean equivalent to ``exited in ok_ret_codes``.
 
         .. versionadded:: 1.0
         """
-        return self.exited == 0
+        return self.exited in self.ok_ret_codes
 
     @property
     def failed(self):
         """
         The inverse of ``ok``.
 
-        I.e., ``True`` if the program exited with a nonzero return code, and
-        ``False`` otherwise.
+        I.e., ``True`` if the program exited with a non-acceptable return code,
+        and ``False`` otherwise.
 
         .. versionadded:: 1.0
         """
