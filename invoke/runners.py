@@ -138,7 +138,7 @@ class Runner(object):
             Whether to warn and continue, instead of raising
             `.UnexpectedExit`, when the executed command exits with an
             unexpected status (see param `ok_ret_codes`). Default: ``False``.
-            Resulting Warnings can be hidden by setting ``hide=True``.
+            Resulting warnings can be hidden by setting ``hide=True``.
 
             .. note::
                 This setting has no effect on exceptions, which will still be
