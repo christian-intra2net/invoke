@@ -291,7 +291,8 @@ class Runner_:
             assert r.ok is True
 
         def accept_custom_return_code_list(self):
-            runner = self._runner(exits=42, run=dict(ok_ret_codes=(23, 42, 48)))
+            runner = self._runner(exits=42,
+                                  run=dict(ok_ret_codes=(23, 42, 48)))
             r = runner.run(_)
             assert r.return_code == 42
             assert r.ok is True
