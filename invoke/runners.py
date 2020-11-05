@@ -407,7 +407,7 @@ class Runner(object):
             pty=self.using_pty,
             hide=self.opts["hide"],
             encoding=self.encoding,
-            ok_ret_codes=self.opts["ok_ret_codes"]
+            ok_ret_codes=self.opts["ok_ret_codes"],
         )
 
     def _run_body(self, command, **kwargs):
